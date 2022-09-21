@@ -73,7 +73,7 @@ class Flickr8KDataset(Dataset):
             std=[0.229, 0.224, 0.225]
         )
         preprocessing = transforms.Compose([
-            transforms.Scale(256),
+            transforms.Resize(256),
             transforms.CenterCrop(image_size),
             transforms.ToTensor(),
             normalize,

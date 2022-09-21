@@ -11,7 +11,7 @@ from dataloader import Flickr8KDataset
 from decoder import CaptionDecoder
 from utils.decoding_utils import greedy_decoding
 from utils.utils import save_checkpoint, log_gradient_norm, set_up_causal_mask
-
+from tqdm import tqdm, trange
 
 def evaluate(subset, encoder, decoder, config, device):
     """Evaluates (BLEU score) caption generation model on a given subset.
@@ -134,7 +134,7 @@ def train(config, writer, device):
         print("Epoch:", epoch)
         decoder.train()
 
-        for x_img, x_words, y, tgt_padding_mask in train_loader:
+        for x_img, x_words, y, tgt_padding_mask in tqdm(train_loader):
             optimizer.zero_grad()
             train_step += 1
 
