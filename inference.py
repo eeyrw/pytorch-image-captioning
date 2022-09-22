@@ -23,8 +23,11 @@ image_transform = transforms.Compose([
     mean=[0.485, 0.456, 0.406],
     std=[0.229, 0.224, 0.225])
 ])
+def openImage(imagePath):
+    img_pil = Image.open(imagePath).convert("RGB")
+    return img_pil
 
-def evaluate_single(imagePath, subset, encoder, decoder, config, device):
+def evaluate_single(rawImageData,tokenInfo, encoder, decoder, device):
     """Evaluates (BLEU score) caption generation model on a given subset.
 
     Arguments:
@@ -35,18 +38,18 @@ def evaluate_single(imagePath, subset, encoder, decoder, config, device):
         device (torch.device): Device on which to port used tensors
     """
 
-    img_pil = Image.open(imagePath).convert("RGB")
-    x_img = image_transform(img_pil)
+    
+    x_img = image_transform(rawImageData)
     x_img = x_img.unsqueeze(0)
 
-    max_len = config["max_len"]
-
     # Mapping from vocab index to string representation
-    idx2word = subset._idx2word
+    idx2word = tokenInfo._idx2word
     # Ids for special tokens
-    sos_id = subset._start_idx
-    eos_id = subset._end_idx
-    pad_id = subset._pad_idx
+    sos_id = tokenInfo._start_idx
+    eos_id = tokenInfo._end_idx
+    pad_id = tokenInfo._pad_idx
+
+    max_len = tokenInfo._max_len
 
 
     x_img = x_img.to(device)
@@ -122,8 +125,8 @@ def evaluate(subset, encoder, decoder, config, device):
     return bleu
 
 
-def main():
 
+def PerapreModel():
     # Load the pipeline configuration file
     config_path = "config.json"
     with open(config_path, "r", encoding="utf8") as f:
@@ -142,17 +145,8 @@ def main():
     torch.manual_seed(config["seed"])
     np.random.seed(config["seed"])
 
-   # Define dataloader hyper-parameters
-    train_hyperparams = {
-        "batch_size": config["batch_size"]["train"],
-        "shuffle": True,
-        "num_workers": 1,
-        "drop_last": True
-    }
-
     # Create dataloaders
-    valid_set = Flickr8KDataset(
-        config, config["split_save"]["validation"], training=False)
+    tokenInfo = Flickr8KDataset.getTokenInfo(config)
 
     #######################
     # Set up the encoder
@@ -176,11 +170,15 @@ def main():
     checkpoint_path = config["checkpoint"]["checkpoint_path"]
     decoder.load_state_dict(torch.load(checkpoint_path))
 
-    with torch.no_grad():
-        encoder.eval()
-        decoder.eval()
-        # Evaluate model performance on subsets
-        evaluate_single(r"G:\NSFW_DS\colt_star-1522508793548259329(20220506_172917)-1542035923298177024(20220629_144308)-include_rts-media\colt_star-1530739983711354880-20220529_103706-img1.jpg",valid_set, encoder, decoder, config, device)
+    encoder.eval()
+    decoder.eval()
+    return encoder, decoder ,tokenInfo, config['max_len'] , device
+
+
+def main():
+    encoder, decoder, tokenInfo, device = PerapreModel()
+    evaluate_single(openImage("a.jpg"),tokenInfo, encoder, decoder, device)
+
 
 if __name__ == "__main__":
     main()

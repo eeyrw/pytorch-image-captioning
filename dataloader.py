@@ -8,12 +8,35 @@ from PIL import Image
 
 
 class Flickr8KDataset(Dataset):
-    """"Represents dataloader for the Flickr8k dataset.
+    @staticmethod
+    def getTokenInfo(config):
+        """Initializes the module.
+        
+        Arguments:
+            config (object): Contains dataset configuration
+            path (str): Location where image captions are stored
+        """
 
-    Data is stored in following format:
-        image_name: associated caption
-    Each image has maximum 5 different captions.
-    """
+        # Load the vocabulary mappings
+        with open(config["word2idx_path"], "r", encoding="utf8") as f:
+            _word2idx = json.load(f)
+        _idx2word = {str(idx): word for word, idx in _word2idx.items()}
+
+        # Auxiliary token indices
+        _start_idx = config["START_idx"]
+        _end_idx = config["END_idx"]
+        _pad_idx = config["PAD_idx"]
+        _UNK_idx = config["UNK_idx"]
+        _max_len = config["max_len"]    
+        tokenInfo = object()
+        setattr(tokenInfo,"_start_idx",_start_idx)
+        setattr(tokenInfo,"_end_idx",_end_idx)
+        setattr(tokenInfo,"_pad_idx",_pad_idx)
+        setattr(tokenInfo,"_UNK_idx",_UNK_idx)
+        setattr(tokenInfo,"_max_len",_max_len)
+        setattr(tokenInfo,"_idx2word",_idx2word)
+        return tokenInfo
+
 
     def __init__(self, config, path, training=True):
         """Initializes the module.
