@@ -2,8 +2,6 @@ import time
 import json
 import numpy as np
 import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader
 import torchvision.models as models
 from nltk.translate.bleu_score import corpus_bleu
 import torchvision.transforms as transforms
